@@ -14,6 +14,10 @@ namespace Ship
 {
     class ShipEngine
     {
+        public ShipEngine()
+        {
+        }
+
         #region Configuration Settings
         private static string aadInstance = ConfigurationManager.AppSettings["ida:AADInstance"];
         private static string tenant = ConfigurationManager.AppSettings["ida:Tenant"];
@@ -25,14 +29,10 @@ namespace Ship
         private static string GameAPIAppId = ConfigurationManager.AppSettings["todo:GameAPIAppId"];
         private static string GameAPIBaseAddress = ConfigurationManager.AppSettings["todo:GameAPIBaseAddress"];
         #endregion 
-
-        public ShipEngine()
-        {
-        }
-
+ 
+        #region Global Variables
         public string AccessToken { get; set; }
-
-        // Declare an array called GameGrid; referenced by GameGrid[rowNumber, colNumber]
+        // Declare an array for own ships called GameGrid; referenced by GameGrid[rowNumber, colNumber]
         public string[,] GameGrid = {
         { "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1" },
         { "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2", "J2" },
@@ -44,7 +44,21 @@ namespace Ship
         { "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "I8", "J8" },
         { "A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9", "I9", "J9" },
         { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
+        // Declare an array for enemy ships called EnemyGameGrid; referenced by EnemyGameGrid[rowNumber, colNumber]
+        public string[,] EnemyGameGrid = {
+        { "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1" },
+        { "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "I2", "J2" },
+        { "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3", "I3", "J3" },
+        { "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "I4", "J4" },
+        { "A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5", "I5", "J5" },
+        { "A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6", "I6", "J6" },
+        { "A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7", "I7", "J7" },
+        { "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "I8", "J8" },
+        { "A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9", "I9", "J9" },
+        { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
+        #endregion
 
+        #region API Methods
         public void AuthenticateToAzureAD()
         {
             // Using Active Directory Authentication Library (ADAL).
@@ -54,7 +68,7 @@ namespace Ship
             Console.WriteLine("Authenticating via Azure AD....");
             Task t1 = Task.Run(async () =>
             {
-                // Make connection using application credientials: uses appid + secret.
+                // Make connection using application credientials: uses appID + secret.
                 ClientCredential clientCredential = new ClientCredential(clientId, clientSecret);
                 result = await authContext.AcquireTokenAsync(GameAPIAppId, clientCredential);
 
@@ -87,7 +101,45 @@ namespace Ship
             t2.Wait();
         }
 
-        public bool CheckPlacement(int colNumber, int rowNumber, int direction, int length) {
+        public void StatusAPI()
+        {
+            Task t2 = Task.Run(async () =>
+            {
+                // Retrieve the data
+                Console.WriteLine("Calling Status API....");
+                HttpClient client = new HttpClient();
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, GameAPIBaseAddress + "/api/status");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+                HttpResponseMessage response = await client.SendAsync(request);
+
+                Console.WriteLine("Call sucessfull = " + response.IsSuccessStatusCode);
+                Console.WriteLine("Result: HTTP{0}", response.StatusCode);
+                Console.WriteLine("Response success/error message = " + response.ReasonPhrase);
+
+                string responseString = await response.Content.ReadAsStringAsync();
+                MasterGameState state = JsonConvert.DeserializeObject<MasterGameState>(responseString);
+
+                Console.WriteLine("Response data = " + responseString);
+                Console.WriteLine();
+            });
+            t2.Wait();
+        }
+        #endregion
+
+        private void ShowGameGrid()   // method to show the game grid in command prompt
+        {
+            for (int rowNumber = 0; rowNumber < 10; rowNumber++)
+            {
+                for (int colNumber = 0; colNumber < 10; colNumber++)
+                {
+                    Console.Write(GameGrid[rowNumber, colNumber]);
+                }
+                Console.WriteLine();
+            }
+        }
+
+        public bool CheckPlacement(int colNumber, int rowNumber, int direction, int length)
+        {
             // Out of bounds check --- direction: 0 = North, 1 = East, 2 = South, 3 = West
 
             if ((direction == 0 && rowNumber + length > 9)
@@ -121,13 +173,11 @@ namespace Ship
              return true;  //true is passed as result if inputs pass out of bounds and existing ship test
         }
 
-
-
         public void Run()
         {
             // Setup.
-            //AuthenticateToAzureAD();
-            //DemoCallAPI();
+            AuthenticateToAzureAD();
+            DemoCallAPI();
 
             PlaceAC1();
             PlaceD1();
@@ -137,34 +187,21 @@ namespace Ship
             PlaceF3();
             PlaceS1();
 
-            //Shoot(0,0);
+            //Shoot(0, 0);
 
             ////Main engine loop.
-            //Task t = Task.Run(async () =>
-            //{
-            //    while (true)
-            //    {
-            //        // Take a Shot - Read API documentation at XXXXX
-            //        Shoot(new Random().Next(0, 10), new Random().Next(0, 10));
-
-            //        Console.WriteLine("{0} - Ship standing by for orders...", DateTime.Now.ToString());
-            //        await Task.Delay(5000);
-            //    }
-            //});
-            //t.Wait();
-        }
-
-        // method to show the game grid in command prompt
-        private void ShowGameGrid()
-        {
-            for (int rowNumber = 0; rowNumber < 10; rowNumber++)
+            Task t = Task.Run(async () =>
             {
-                for (int colNumber = 0; colNumber < 10; colNumber++)
+                while (true)
                 {
-                    Console.Write(GameGrid[rowNumber, colNumber]);
+                    // Take a Shot - Read API documentation at XXXXX
+                    Shoot(new Random().Next(0, 10), new Random().Next(0, 10));
+
+                    Console.WriteLine("{0} - Ship standing by for orders...", DateTime.Now.ToString());
+                    await Task.Delay(5000);
                 }
-                Console.WriteLine();
-            }
+            });
+            t.Wait();
         }
 
         #region Ship Placement
@@ -786,29 +823,5 @@ namespace Ship
         }
 
         #endregion
-
-        public void StatusAPI()
-        {
-            Task t2 = Task.Run(async () =>
-            {
-                // Retrieve the data
-                Console.WriteLine("Calling Status API....");
-                HttpClient client = new HttpClient();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, GameAPIBaseAddress + "/api/status");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
-                HttpResponseMessage response = await client.SendAsync(request);
-
-                Console.WriteLine("Call sucessfull = " + response.IsSuccessStatusCode);
-                Console.WriteLine("Result: HTTP{0}", response.StatusCode);
-                Console.WriteLine("Response success/error message = " + response.ReasonPhrase);
-
-                string responseString = await response.Content.ReadAsStringAsync();
-                MasterGameState state = JsonConvert.DeserializeObject<MasterGameState>(responseString);
-
-                Console.WriteLine("Response data = " + responseString);
-                Console.WriteLine();
-            });
-            t2.Wait();
-        }
     }
 }
