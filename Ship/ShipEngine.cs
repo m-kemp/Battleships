@@ -32,6 +32,7 @@ namespace Ship
  
         #region Global Variables
         public string AccessToken { get; set; }
+
         // Declare an array for own ships called GameGrid; referenced by GameGrid[rowNumber, colNumber]
         public string[,] GameGrid = {
         { "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1" },
@@ -44,6 +45,7 @@ namespace Ship
         { "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "I8", "J8" },
         { "A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9", "I9", "J9" },
         { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
+
         // Declare an array for enemy ships called EnemyGameGrid; referenced by EnemyGameGrid[rowNumber, colNumber]
         public string[,] EnemyGameGrid = {
         { "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1" },
@@ -56,6 +58,8 @@ namespace Ship
         { "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "I8", "J8" },
         { "A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9", "I9", "J9" },
         { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
+
+        private int ShotsTaken = 0;
         #endregion
 
         #region API Methods
@@ -187,18 +191,16 @@ namespace Ship
             PlaceF3();
             PlaceS1();
 
-            //Shoot(0, 0);
-
             ////Main engine loop.
             Task t = Task.Run(async () =>
             {
                 while (true)
                 {
                     // Take a Shot - Read API documentation at XXXXX
-                    Shoot(new Random().Next(0, 10), new Random().Next(0, 10));
+                    Shoot();
 
                     Console.WriteLine("{0} - Ship standing by for orders...", DateTime.Now.ToString());
-                    await Task.Delay(5000);
+                    await Task.Delay(15000);
                 }
             });
             t.Wait();
@@ -798,16 +800,29 @@ namespace Ship
 
         #region Shooting
 
-        private void Shoot(int x, int y)
+        private void Shoot()
         {
-            Console.WriteLine("Taking a shot....");
+            int rowNumber = 0;
+            int colNumber = 0;
+
+            do
+            {
+                rowNumber = new Random().Next(0, 10);
+                colNumber = new Random().Next(0, 10);
+            } while (CheckShot(colNumber, rowNumber) == false);
+
+            Console.WriteLine("Shooting at co-ordinates " + colNumber + "," + rowNumber);
             HttpClient client = new HttpClient();
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, GameAPIBaseAddress + "/api/shoot");
-            request.Content = new System.Net.Http.StringContent("{'positionX': " + x + ",'positionY': " + y + "}", Encoding.UTF8, "application/json");
+            request.Content = new System.Net.Http.StringContent("{'positionX': " + colNumber + ",'positionY': " + rowNumber + "}", Encoding.UTF8, "application/json");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
             Task t = Task.Run(async () =>
             {
+                EnemyGameGrid[rowNumber, colNumber] = "Shot At";
+                ShotsTaken++;
+                Console.WriteLine("Number of shots fired: " + ShotsTaken);
+
                 HttpResponseMessage response = await client.SendAsync(request);
                 Console.WriteLine("Call sucessfull = " + response.IsSuccessStatusCode);
                 Console.WriteLine("Result: HTTP{0}", response.StatusCode);
@@ -822,6 +837,12 @@ namespace Ship
 
         }
 
+        public bool CheckShot(int colNumber, int rowNumber)
+        {
+            // Existing shot at co-oridinates
+            if (EnemyGameGrid[rowNumber, colNumber].Length > 3) { return false; }
+            return true;
+        }
         #endregion
     }
 }
