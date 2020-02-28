@@ -60,6 +60,7 @@ namespace Ship
         { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
 
         private int ShotsTaken = 0;
+        private int TargetsHit = 0;
         #endregion
 
         #region API Methods
@@ -830,6 +831,10 @@ namespace Ship
 
                 string responseString = await response.Content.ReadAsStringAsync();
                 Console.WriteLine("Response data = " + responseString);
+                if (responseString == "true") {
+                    TargetsHit++;
+                }
+                Console.WriteLine("Number of hits :" + TargetsHit);
                 Console.WriteLine();
             });
 
