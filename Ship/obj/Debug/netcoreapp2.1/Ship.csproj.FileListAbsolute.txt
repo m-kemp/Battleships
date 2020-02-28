@@ -1,0 +1,12 @@
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.dll.config
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.deps.json
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.runtimeconfig.json
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.runtimeconfig.dev.json
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.dll
+C:\Users\Demo\Desktop\Battleships\Code\Ship\bin\Debug\netcoreapp2.1\Ship.pdb
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.csprojAssemblyReference.cache
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.csproj.CoreCompileInputs.cache
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.AssemblyInfoInputs.cache
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.AssemblyInfo.cs
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.dll
+C:\Users\Demo\Desktop\Battleships\Code\Ship\obj\Debug\netcoreapp2.1\Ship.pdb
