@@ -59,8 +59,9 @@ namespace Ship
         { "A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9", "I9", "J9" },
         { "A10", "B10", "C10", "D10", "E10", "F10", "G10", "H10", "I10", "J10" }};
 
-        private int ShotsTaken = 0;
-        private int TargetsHit = 0;
+        private float ShotsTaken = 0;
+        private float TargetsHit = 0;
+        private float HitRatio = 0;
         #endregion
 
         #region API Methods
@@ -822,8 +823,7 @@ namespace Ship
             {
                 EnemyGameGrid[rowNumber, colNumber] = "Shot At";
                 ShotsTaken++;
-                Console.WriteLine("Number of shots fired: " + ShotsTaken);
-
+                
                 HttpResponseMessage response = await client.SendAsync(request);
                 Console.WriteLine("Call sucessfull = " + response.IsSuccessStatusCode);
                 Console.WriteLine("Result: HTTP{0}", response.StatusCode);
@@ -834,12 +834,14 @@ namespace Ship
                 if (responseString == "true") {
                     TargetsHit++;
                 }
-                Console.WriteLine("Number of hits :" + TargetsHit);
-                Console.WriteLine();
             });
 
             t.Wait();
-
+            HitRatio = (TargetsHit / ShotsTaken)*100;
+            Console.WriteLine("Number of shots fired: " + ShotsTaken);
+            Console.WriteLine("Number of hits: " + TargetsHit);
+            Console.WriteLine("Hit ratio: " + (HitRatio.ToString("N0")) + "%");
+            Console.WriteLine();
         }
 
         public bool CheckShot(int colNumber, int rowNumber)
